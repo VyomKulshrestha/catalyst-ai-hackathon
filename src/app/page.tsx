@@ -90,18 +90,18 @@ export default function Home() {
             <p className="text-zinc-500 font-headline text-[10px] tracking-[0.2em] uppercase mt-1">Oracle V.1</p>
         </div>
         <nav className="flex-1 space-y-1">
-            <a className="text-zinc-500 hover:text-zinc-300 px-6 py-4 flex items-center gap-4 transition-all font-headline text-sm tracking-wide uppercase hover:bg-white/5" href="#">
+            <button onClick={() => alert("Intelligence Layer requires Enterprise clearance.")} className="w-full text-left text-zinc-500 hover:text-zinc-300 px-6 py-4 flex items-center gap-4 transition-all font-headline text-sm tracking-wide uppercase hover:bg-white/5">
                 <span className="material-symbols-outlined">psychology</span>
                 <span>Intelligence</span>
-            </a>
-            <a className="bg-gradient-to-r from-[#360061]/40 to-[#120076]/40 text-[#c0bdff] border-r-2 border-[#9492ff] px-6 py-4 flex items-center gap-4 transition-all font-headline text-sm tracking-wide uppercase" href="#">
+            </button>
+            <div className="bg-gradient-to-r from-[#360061]/40 to-[#120076]/40 text-[#c0bdff] border-r-2 border-[#9492ff] px-6 py-4 flex items-center gap-4 transition-all font-headline text-sm tracking-wide uppercase">
                 <span className="material-symbols-outlined">radar</span>
                 <span>Scout Pipeline</span>
-            </a>
-            <a className="text-zinc-500 hover:text-zinc-300 px-6 py-4 flex items-center gap-4 transition-all font-headline text-sm tracking-wide uppercase hover:bg-white/5" href="#">
+            </div>
+            <button onClick={() => alert("Talent Market sync unavailable in current build.")} className="w-full text-left text-zinc-500 hover:text-zinc-300 px-6 py-4 flex items-center gap-4 transition-all font-headline text-sm tracking-wide uppercase hover:bg-white/5">
                 <span className="material-symbols-outlined">groups</span>
                 <span>Talent Market</span>
-            </a>
+            </button>
         </nav>
       </aside>
 
@@ -112,10 +112,12 @@ export default function Home() {
           </div>
           <div className="flex items-center gap-6">
               <div className="flex items-center gap-4 text-zinc-400">
-                  <span className="material-symbols-outlined">notifications_active</span>
-                  <div className="w-8 h-8 rounded-full border border-[#cc97ff]/30 bg-[#262626] flex items-center justify-center overflow-hidden">
-                     <span className="material-symbols-outlined text-sm">person</span>
-                  </div>
+                  <button onClick={() => alert("No new notifications.")} className="hover:text-white transition-colors">
+                    <span className="material-symbols-outlined">notifications_active</span>
+                  </button>
+                  <button onClick={() => alert("User profile settings are locked.")} className="w-8 h-8 rounded-full border border-[#cc97ff]/30 bg-[#262626] flex items-center justify-center overflow-hidden hover:border-[#cc97ff] transition-colors">
+                     <span className="material-symbols-outlined text-sm text-[#cc97ff]">person</span>
+                  </button>
               </div>
           </div>
       </header>
