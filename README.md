@@ -6,6 +6,7 @@ An AI-Powered Talent Scouting & Engagement Agent built for the Deccan AI Catalys
 Recruiters spend hours sifting through profiles and chasing candidate interest. Catalyst AI Scout autonomously parses a Job Description (JD), discovers matching candidates from a database, and engages them using a simulated AI conversation to gauge their genuine interest. It outputs a composite final ranking based on both the technical fit (Match Score) and the candidate's responsiveness (Interest Score).
 
 ## Architecture & Logic
+*(For the full architecture, approach, trade-offs, and tool declarations, see the [WRITE_UP.md](./WRITE_UP.md))*
 
 1. **Job Description Parsing & Matching**
    - **Input:** User provides a JD text and their Gemini API key.

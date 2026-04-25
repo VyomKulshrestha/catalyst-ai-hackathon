@@ -1,8 +1,11 @@
-"use server"
+"use server";
 
 import { GoogleGenAI } from "@google/genai";
 import candidates from "@/data/candidates.json";
 
+/**
+ * Represents the structured Output of the Job Description Matching Engine.
+ */
 export interface MatchResult {
   candidateId: string;
   name: string;
@@ -12,6 +15,18 @@ export interface MatchResult {
   explanation: string;
 }
 
+/**
+ * Processes the Job Description against the candidate database.
+ * 
+ * Approach:
+ * We iterate our local database of candidates. For each candidate, we pass their
+ * profile and the JD to Gemini. Gemini acts as an expert recruiter and evaluates
+ * the compatibility, outputting a precise score and an actionable explanation.
+ * 
+ * @param apiKey - User's Gemini API Key
+ * @param jd - Raw Job Description text
+ * @returns Array of Candidates with initial Match Scores, sorted descending.
+ */
 export async function processJobDescription(apiKey: string, jd: string): Promise<MatchResult[]> {
   if (!apiKey) throw new Error("API Key is required");
   const ai = new GoogleGenAI({ apiKey });
@@ -31,8 +46,8 @@ Experience: ${candidate.experience_years} years
 Evaluate the candidate's match for this job description.
 Provide your response strictly in the following JSON format:
 {
-  "matchScore": <number between 0 and 100 depending on how well they match the JD. Focus heavily on tech stack and years of experience.>,
-  "explanation": "<2-3 sentences explaining exactly why this score was given, highlighting strengths and missing requirements>"
+  "matchScore": <number between 0 and 100 depending on how well they match the JD. Focus heavily on tech stack and years of experience. Be realistic, not overly generous.>,
+  "explanation": "<2-3 concise sentences explaining exactly why this score was given, highlighting strengths and missing requirements>"
 }
 `;
 
@@ -77,11 +92,29 @@ export interface ChatMessage {
   text: string;
 }
 
+/**
+ * Result of the Candidate Engagement round.
+ */
 export interface ChatResponse {
   response: string;
   interestScore: number;
 }
 
+/**
+ * Simulates a conversation with a candidate to gauge their genuine interest.
+ * 
+ * Approach:
+ * We dynamically construct an LLM persona using the candidate's hidden profile
+ * traits (e.g. salary expectations, current job satisfaction). 
+ * Along with returning a natural language reply to the recruiter, the LLM secretly
+ * maintains and outputs an "Interest Score" from 0-100 indicating how convinced 
+ * the candidate is to take the job.
+ * 
+ * @param apiKey - User's Gemini API Key
+ * @param candidateId - The ID of the candidate being engaged
+ * @param history - Back-and-forth chat history
+ * @param jd - The original job description for context
+ */
 export async function chatWithCandidate(apiKey: string, candidateId: string, history: ChatMessage[], jd: string): Promise<ChatResponse> {
   if (!apiKey) throw new Error("API Key is required");
   const ai = new GoogleGenAI({ apiKey });
@@ -139,10 +172,11 @@ Output your response strictly as JSON:
       interestScore: parsed.interestScore || 50
     };
   } catch (error) {
-    console.error(error);
+    console.error("Agent simulation error:", error);
     return {
-      response: "I'm having trouble connecting right now.",
+      response: "I'm having trouble connecting right now, but I am still open to chatting later.",
       interestScore: 0
     };
   }
 }
+
