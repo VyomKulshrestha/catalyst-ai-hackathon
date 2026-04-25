@@ -10,6 +10,7 @@ export default function Home() {
   const [apiKeySaved, setApiKeySaved] = useState(false);
   const [jd, setJd] = useState("");
   const [step, setStep] = useState<"API" | "JD" | "LOADING" | "RESULTS" | "ENGAGING" | "TRANSCRIPT" | "FINAL">("API");
+  const [provider, setProvider] = useState<"gemini" | "openai" | "anthropic">("gemini");
   
   const [candidatesList, setCandidatesList] = useState<any[]>(defaultCandidates);
   const [matchResults, setMatchResults] = useState<MatchResult[]>([]);
@@ -27,7 +28,7 @@ export default function Home() {
     if (!jd.trim()) return;
     setStep("LOADING");
     try {
-      const results = await processJobDescription(apiKey || undefined, jd, candidatesList);
+      const results = await processJobDescription(apiKey || undefined, jd, candidatesList, provider);
       setMatchResults(results);
       setStep("RESULTS");
     } catch (e: any) {
@@ -62,7 +63,7 @@ export default function Home() {
     
     try {
       const candidateObj = candidatesList.find(c => c.id === candidateId || c.candidateId === candidateId);
-      const res = await autonomousEngageCandidate(apiKey || undefined, candidateObj, jd);
+      const res = await autonomousEngageCandidate(apiKey || undefined, candidateObj, jd, provider);
       setEngagementResults(prev => ({ ...prev, [candidateId]: res }));
       setStep("TRANSCRIPT");
     } catch (e: any) {
@@ -120,20 +121,37 @@ export default function Home() {
       <main className="ml-72 pt-32 px-12 pb-20 relative z-10 min-h-screen flex flex-col">
         <AnimatePresence mode="wait">
           
-          {/* STEP 1: API KEY */}
+          {/* STEP 1: API KEY & PROVIDER */}
           {step === "API" && (
             <motion.div key="api" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="m-auto w-full max-w-lg bg-[#131313] border border-white/5 p-10 rounded-[2rem]">
               <div className="mb-8">
                 <span className="material-symbols-outlined text-4xl text-[#cc97ff] mb-4">vpn_key</span>
                 <h2 className="text-3xl font-headline font-bold uppercase tracking-tighter">System Access</h2>
-                <p className="text-zinc-500 mt-2 text-sm">Provide your Gemini Key to initialize the Agent core.</p>
+                <p className="text-zinc-500 mt-2 text-sm">Select Intelligence Provider and supply API key to initialize.</p>
               </div>
+              
+              <div className="flex gap-4 mb-6">
+                 {['gemini', 'openai', 'anthropic'].map((p) => (
+                    <button 
+                       key={p} 
+                       onClick={() => setProvider(p as any)}
+                       className={`flex-1 py-3 rounded-xl border font-headline text-xs tracking-widest uppercase transition-all ${
+                          provider === p 
+                          ? 'bg-[#cc97ff]/20 border-[#cc97ff] text-[#cc97ff] glow-primary' 
+                          : 'bg-[#000000] border-[#494847]/30 text-zinc-500 hover:border-zinc-500'
+                       }`}
+                    >
+                       {p}
+                    </button>
+                 ))}
+              </div>
+
               <input 
                 type="password" 
-                placeholder="AIzaSy... (Leave blank to use Server Key)" 
+                placeholder={`${provider.toUpperCase()} API Key (Leave blank to use Server Key)`}
                 value={apiKey}
                 onChange={e => setApiKey(e.target.value)}
-                className="w-full bg-[#000000] border border-[#494847]/30 rounded-xl px-5 py-4 focus:outline-none focus:border-[#cc97ff] focus:shadow-[0_0_10px_rgba(204,151,255,0.2)] transition-all text-white mb-8"
+                className="w-full bg-[#000000] border border-[#494847]/30 rounded-xl px-5 py-4 focus:outline-none focus:border-[#cc97ff] focus:shadow-[0_0_10px_rgba(204,151,255,0.2)] transition-all text-white mb-8 text-sm"
               />
               <button 
                 onClick={() => { setApiKeySaved(true); setStep("JD"); }}

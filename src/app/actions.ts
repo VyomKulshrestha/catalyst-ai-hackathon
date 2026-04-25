@@ -1,6 +1,8 @@
 "use server";
 
 import { GoogleGenAI } from "@google/genai";
+import OpenAI from "openai";
+import Anthropic from "@anthropic-ai/sdk";
 
 /**
  * Represents the structured Output of the Job Description Matching Engine.
@@ -22,15 +24,16 @@ export interface MatchResult {
  * profile and the JD to Gemini. Gemini acts as an expert recruiter and evaluates
  * the compatibility, outputting a precise score and an actionable explanation.
  * 
- * @param apiKey - User's Gemini API Key (Optional if server has GEMINI_API_KEY env var)
+ * @param apiKey - User's API Key
  * @param jd - Raw Job Description text
  * @param candidatesList - Dynamic array of candidates to process
+ * @param provider - Model provider (gemini, openai, anthropic)
  * @returns Array of Candidates with initial Match Scores, sorted descending.
  */
-export async function processJobDescription(apiKey: string | undefined, jd: string, candidatesList: any[]): Promise<MatchResult[]> {
-  const keyToUse = apiKey || process.env.GEMINI_API_KEY;
+export async function processJobDescription(apiKey: string | undefined, jd: string, candidatesList: any[], provider: string = "gemini"): Promise<MatchResult[]> {
+  const keyToUse = apiKey || process.env.MODEL_API_KEY || process.env.GEMINI_API_KEY;
   if (!keyToUse) throw new Error("API Key is required or must be set in Vercel environment variables.");
-  const ai = new GoogleGenAI({ apiKey: keyToUse });
+  
   const results: MatchResult[] = [];
 
   for (const candidate of candidatesList) {
@@ -53,15 +56,37 @@ Provide your response strictly in the following JSON format:
 `;
 
     try {
-      const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: prompt,
-        config: {
-          responseMimeType: "application/json"
-        }
-      });
+      let text = "{}";
       
-      const text = response.text || "{}";
+      if (provider === "openai") {
+        const openai = new OpenAI({ apiKey: keyToUse });
+        const response = await openai.chat.completions.create({
+          model: "gpt-4o-mini",
+          response_format: { type: "json_object" },
+          messages: [{ role: "user", content: prompt }]
+        });
+        text = response.choices[0].message.content || "{}";
+      } 
+      else if (provider === "anthropic") {
+        const anthropic = new Anthropic({ apiKey: keyToUse });
+        const response = await anthropic.messages.create({
+          model: "claude-3-haiku-20240307",
+          max_tokens: 1000,
+          messages: [{ role: "user", content: prompt + "\n\nCRITICAL: OUTPUT ONLY RAW JSON WITH NO MARKDOWN BLOCK OR OTHER TEXT." }]
+        });
+        text = response.content[0].type === 'text' ? response.content[0].text : "{}";
+      }
+      else {
+        // default to gemini
+        const ai = new GoogleGenAI({ apiKey: keyToUse });
+        const response = await ai.models.generateContent({
+          model: 'gemini-2.5-flash',
+          contents: prompt,
+          config: { responseMimeType: "application/json" }
+        });
+        text = response.text || "{}";
+      }
+      
       const parsed = JSON.parse(text);
       
       results.push({
@@ -101,14 +126,14 @@ export interface AutonomousEngagementResult {
  * To fulfill the "Agentic AI" requirement, the user does not manually chat. The AI agent 
  * handles the outreach, pitches the JD, handles objections based on the candidate's salary 
  * and personality expectations, and outputs a transcript and a final Interest Score.
- * @param apiKey - User's Gemini API Key
+ * @param apiKey - User's API Key
  * @param candidate - The candidate object being engaged
  * @param jd - The original job description for context
+ * @param provider - Model provider
  */
-export async function autonomousEngageCandidate(apiKey: string | undefined, candidate: any, jd: string): Promise<AutonomousEngagementResult> {
-  const keyToUse = apiKey || process.env.GEMINI_API_KEY;
+export async function autonomousEngageCandidate(apiKey: string | undefined, candidate: any, jd: string, provider: string = "gemini"): Promise<AutonomousEngagementResult> {
+  const keyToUse = apiKey || process.env.MODEL_API_KEY || process.env.GEMINI_API_KEY;
   if (!keyToUse) throw new Error("API Key is required or must be set in Vercel environment variables.");
-  const ai = new GoogleGenAI({ apiKey: keyToUse });
   
   if (!candidate) throw new Error("Candidate not found");
 
@@ -139,15 +164,43 @@ Output your response strictly as JSON:
 `;
 
   try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: prompt,
-      config: {
-        responseMimeType: "application/json"
-      }
-    });
+    let text = "{}";
+    
+    if (provider === "openai") {
+      const openai = new OpenAI({ apiKey: keyToUse });
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        response_format: { type: "json_object" },
+        messages: [{ role: "user", content: prompt }]
+      });
+      text = response.choices[0].message.content || "{}";
+    } 
+    else if (provider === "anthropic") {
+      const anthropic = new Anthropic({ apiKey: keyToUse });
+      const response = await anthropic.messages.create({
+        model: "claude-3-haiku-20240307",
+        max_tokens: 1500,
+        messages: [{ role: "user", content: prompt + "\n\nCRITICAL: OUTPUT ONLY RAW JSON WITH NO MARKDOWN BLOCK OR OTHER TEXT." }]
+      });
+      text = response.content[0].type === 'text' ? response.content[0].text : "{}";
+    }
+    else {
+      // default to gemini
+      const ai = new GoogleGenAI({ apiKey: keyToUse });
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: prompt,
+        config: { responseMimeType: "application/json" }
+      });
+      text = response.text || "{}";
+    }
 
-    const parsed = JSON.parse(response.text || "{}");
+    // Attempt to extract raw json if anthropic/openai leaked markdown
+    if (text.startsWith('```json')) {
+       text = text.replace(/```json/g, '').replace(/```/g, '').trim();
+    }
+
+    const parsed = JSON.parse(text);
     return {
       transcript: parsed.transcript || [],
       interestScore: parsed.interestScore || 0
