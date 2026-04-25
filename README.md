@@ -1,36 +1,57 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Catalyst AI Scout
 
-## Getting Started
+An AI-Powered Talent Scouting & Engagement Agent built for the Deccan AI Catalyst Hackathon.
 
-First, run the development server:
+## Overview
+Recruiters spend hours sifting through profiles and chasing candidate interest. Catalyst AI Scout autonomously parses a Job Description (JD), discovers matching candidates from a database, and engages them using a simulated AI conversation to gauge their genuine interest. It outputs a composite final ranking based on both the technical fit (Match Score) and the candidate's responsiveness (Interest Score).
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Architecture & Logic
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+1. **Job Description Parsing & Matching**
+   - **Input:** User provides a JD text and their Gemini API key.
+   - **Matching Engine:** We use Gemini 2.5 Flash to compare the JD against our internal `candidates.json` mock database. It generates a **Match Score (0-100)** and a technical explanation of *why* the candidate fits the role.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+2. **Autonomous Engagement Simulation**
+   - **Execution:** When the recruiter decides to engage a candidate, a simulated chat UI opens. The candidate is powered by the Gemini model, heavily prompted with their character profile (including hidden personality traits, salary expectations, and current job satisfaction).
+   - **Interest Extraction:** With every candidate reply, the model secretly evaluates and returns an **Interest Score (0-100)** based on how well the opportunity (JD + recruiter pitch) aligns with their hidden preferences.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+3. **Global Ranking**
+   - **Scoring:** The agent generates a final pipeline combining `(Match Score * 0.6) + (Interest Score * 0.4)` to yield a **Global Score**. The recruiter can immediately make an offer to the highest-scoring candidate.
 
-## Learn More
+## How to Run Locally
 
-To learn more about Next.js, take a look at the following resources:
+### Prerequisites
+- Node.js (v18+)
+- A Gemini API Key from Google AI Studio.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Steps
+1. Clone the repository.
+   ```bash
+   git clone https://github.com/hackathon-deccan-ai/your-repo-name.git
+   cd your-repo-name
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Run the development server:
+   ```bash
+   npm run dev
+   ```
+4. Open [http://localhost:3000](http://localhost:3000) with your browser.
+5. Provide your Gemini API key in the UI and test the scout!
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Sample Inputs and Outputs
+**Sample JD Input:**
+> "We are looking for a Senior AI Engineer deeply experienced with Python, PyTorch, and deploying LLMs. Must have 5+ years of experience. We offer competitive salary up to $180k."
 
-## Deploy on Vercel
+**Sample Match Output:**
+> Alice Chen (Senior AI Engineer) - Match 95%. "Alice aligns perfectly with the required 5+ years of experience and core skills in Python, PyTorch, and LLMs. Her current role heavily prepares her for this position."
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+**Sample Engagement Output:**
+> *Recruiter:* Hey Alice, how would you feel about moving to a new AI product role paying $180k?
+> *Candidate:* That sounds extremely compelling as I am highly motivated by hard technical problems. I'd love to learn more.
+> *(Interest Score updates to 90%)*
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Demo Video
+*(Your Demo Video Link Here)*

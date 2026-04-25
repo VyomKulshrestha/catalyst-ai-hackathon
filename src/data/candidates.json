@@ -1,0 +1,52 @@
+[
+  {
+    "id": "c1",
+    "name": "Alice Chen",
+    "role": "Senior AI Engineer",
+    "skills": ["Python", "TensorFlow", "PyTorch", "NLP", "LLMs", "FastAPI"],
+    "experience_years": 6,
+    "current_company": "TechNova",
+    "salary_expectation": "$160k",
+    "personality_context": "Direct and highly motivated by hard technical problems. Currently very happy, but would move for a challenging AI product role involving cutting-edge LLMs."
+  },
+  {
+    "id": "c2",
+    "name": "Bob Smith",
+    "role": "Machine Learning Engineer",
+    "skills": ["Python", "Scikit-Learn", "AWS", "Docker", "SQL"],
+    "experience_years": 3,
+    "current_company": "DataCorp",
+    "salary_expectation": "$120k",
+    "personality_context": "Looking for opportunities to grow. Easily excitable but tends to jump from job to job. Interested in generous stock options."
+  },
+  {
+    "id": "c3",
+    "name": "Charlie Davis",
+    "role": "Frontend Developer",
+    "skills": ["React", "TypeScript", "Next.js", "Tailwind CSS", "Node.js"],
+    "experience_years": 4,
+    "current_company": "WebWorks",
+    "salary_expectation": "$130k",
+    "personality_context": "Creative and design-focused. Passionate about UX layout. Not interested in heavy ML or backend."
+  },
+  {
+    "id": "c4",
+    "name": "David Kim",
+    "role": "AI Research Scientist",
+    "skills": ["Python", "Machine Learning", "Deep Learning", "Transformers", "Computer Vision"],
+    "experience_years": 8,
+    "current_company": "AI Labs",
+    "salary_expectation": "$200k",
+    "personality_context": "Very academic. Reluctant to leave his current prestigious lab unless the compensation is enormous and he has academic freedom."
+  },
+  {
+    "id": "c5",
+    "name": "Elena Rodriguez",
+    "role": "Full Stack AI Developer",
+    "skills": ["Python", "JavaScript", "React", "FastAPI", "Prompt Engineering", "OpenAI API"],
+    "experience_years": 5,
+    "current_company": "StartupX",
+    "salary_expectation": "$140k",
+    "personality_context": "Energetic, loves hackathons and shipping fast. Frustrated with current startup's slow pace. Open to almost anything if the team is cool."
+  }
+]
