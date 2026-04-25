@@ -87,80 +87,57 @@ Provide your response strictly in the following JSON format:
   return results.sort((a, b) => b.matchScore - a.matchScore);
 }
 
-export interface ChatMessage {
-  role: "user" | "model";
-  text: string;
-}
-
-/**
- * Result of the Candidate Engagement round.
- */
-export interface ChatResponse {
-  response: string;
+export interface AutonomousEngagementResult {
+  transcript: { speaker: string; text: string }[];
   interestScore: number;
 }
 
 /**
- * Simulates a conversation with a candidate to gauge their genuine interest.
+ * Autonomously engages a candidate by simulating a conversation between an AI Recruiter Agent 
+ * and the Candidate based on their hidden persona constraints.
  * 
  * Approach:
- * We dynamically construct an LLM persona using the candidate's hidden profile
- * traits (e.g. salary expectations, current job satisfaction). 
- * Along with returning a natural language reply to the recruiter, the LLM secretly
- * maintains and outputs an "Interest Score" from 0-100 indicating how convinced 
- * the candidate is to take the job.
- * 
- * @param apiKey - User's Gemini API Key
- * @param candidateId - The ID of the candidate being engaged
- * @param history - Back-and-forth chat history
- * @param jd - The original job description for context
+ * To fulfill the "Agentic AI" requirement, the user does not manually chat. The AI agent 
+ * handles the outreach, pitches the JD, handles objections based on the candidate's salary 
+ * and personality expectations, and outputs a transcript and a final Interest Score.
  */
-export async function chatWithCandidate(apiKey: string, candidateId: string, history: ChatMessage[], jd: string): Promise<ChatResponse> {
+export async function autonomousEngageCandidate(apiKey: string, candidateId: string, jd: string): Promise<AutonomousEngagementResult> {
   if (!apiKey) throw new Error("API Key is required");
   const ai = new GoogleGenAI({ apiKey });
   
   const candidate = candidates.find(c => c.id === candidateId);
   if (!candidate) throw new Error("Candidate not found");
 
-  const systemPrompt = `You are playing the role of a candidate named ${candidate.name}.
-Your background:
+  const prompt = `You are the core intelligence of "LUMINAL SCOUT", an autonomous AI recruiting agent.
+Your task is to simulate a short 3-4 turn outreach conversation between yourself (AI Recruiter) and a Candidate.
+
+Job Description being pitched:
+${jd}
+
+Candidate Hidden Profile (Do not reveal these raw constraints to the recruiter persona, let the candidate persona act on them):
+- Name: ${candidate.name}
 - Role: ${candidate.role}
 - Experience: ${candidate.experience_years} years
-- Current Company: ${candidate.current_company}
 - Salary Expectation: ${candidate.salary_expectation}
 - Personality/Context: ${candidate.personality_context}
 
-A recruiter is chatting with you about the following job description:
-${jd}
-
-Respond to the recruiter naturally in character. Limit responses to 1-3 short sentences. 
-You can be convinced if the recruiter mentions things that align with your personality / salary expectations.
-Maintain an internal "Interest Score" from 0 to 100 representing how interested you are in this opportunity so far.
+Write a realistic, professional transcript. The AI Recruiter pitches the role. The Candidate responds based heavily on their Salary Expectation and Personality Context. The AI Recruiter tries to address concerns. The Candidate gives a final verdict.
+Based on the transcript, assign a final "interestScore" (0-100) indicating how likely the candidate is to accept an interview.
 
 Output your response strictly as JSON:
 {
-  "response": "<your conversational reply>",
+  "transcript": [
+    { "speaker": "AI Recruiter", "text": "..." },
+    { "speaker": "Candidate", "text": "..." }
+  ],
   "interestScore": <number between 0 and 100>
 }
 `;
 
-  // construct Gemini conversation
-  const contents = [
-    { role: "user", parts: [{ text: systemPrompt }] },
-    { role: "model", parts: [{ text: '{"response": "Got it. I will respond in character.", "interestScore": 50}' }] },
-  ];
-
-  for (const msg of history) {
-    contents.push({
-      role: msg.role === "user" ? "user" : "model",
-      parts: [{ text: msg.text }]
-    });
-  }
-
   try {
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
-      contents: contents,
+      contents: prompt,
       config: {
         responseMimeType: "application/json"
       }
@@ -168,15 +145,14 @@ Output your response strictly as JSON:
 
     const parsed = JSON.parse(response.text || "{}");
     return {
-      response: parsed.response || "I have nothing to say.",
-      interestScore: parsed.interestScore || 50
+      transcript: parsed.transcript || [],
+      interestScore: parsed.interestScore || 0
     };
   } catch (error) {
     console.error("Agent simulation error:", error);
     return {
-      response: "I'm having trouble connecting right now, but I am still open to chatting later.",
+      transcript: [{ speaker: "System", text: "Failed to establish neural link with candidate." }],
       interestScore: 0
     };
   }
 }
-
