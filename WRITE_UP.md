@@ -1,17 +1,19 @@
-# Catalyst AI Scout - Write-Up
+# Luminal Scout - Write-Up
+
+**Live Deployment:** [https://catalyst-ai-hackathon.vercel.app/](https://catalyst-ai-hackathon.vercel.app/)
 
 ## Approach
-Automating talent acquisition usually stops at parsing resumes and matching keywords. Catalyst AI Scout goes further by attempting to automate the *discovery* and *early engagement* phases. The approach operates in two main loops:
+Automating talent acquisition usually stops at parsing resumes and matching keywords. Luminal Scout goes further by attempting to automate the *discovery* and *early engagement* phases autonomously. The approach operates in two main loops:
 1. **The Match Loop:** Translating a raw Job Description (JD) into structured logic, evaluating a candidate pool, and generating a 0-100 `Match Score` along with human-readable "explainability".
-2. **The Engagement Loop:** Creating autonomous AI personas for the candidates. The system runs simulations where candidates respond to the recruiter authentically while updating a hidden `Interest Score` based on their secret profile parameters (salary needs, job satisfaction, preferred tech stack).
+2. **The Engagement Loop:** Creating autonomous AI simulations. The system runs background interactions where an AI Recruiter pitches the role to a simulated Candidate persona. The Candidate responds authentically while updating a hidden `Interest Score` based on their secret profile parameters (salary needs, job satisfaction, preferred tech stack).
 
 ## Architecture
-The application is a monolith built with **Next.js (React)** and **Tailwind CSS**. 
+The application is a monolith built with **Next.js (React)** and **Tailwind CSS**, deployed directly to Vercel.
 
 ### 1. Frontend (UI Layer)
 - **Framework:** Next.js (Client Components)
-- **Styling:** Tailwind CSS, `framer-motion` for fluid pipeline transitions, `lucide-react` for iconography.
-- **State Management:** React `useState` and `useRef` to govern the pipeline progression (API Key -> JD Input -> Loading -> Dashboard -> Chat Engagement -> Final Ranking).
+- **Styling:** Tailwind CSS, `framer-motion` for fluid pipeline transitions. High-end "Luminal Scout" design system generated via StitchMCP (dark mode, glassmorphism, glowing telemetry).
+- **State Management:** React `useState` and `useRef` to govern the pipeline progression (API Key -> JD Input -> Loading -> Dashboard -> Autonomous Agent Transcript -> Final Ranking).
 
 ### 2. Backend (Server Actions)
 - **Logic:** Handled natively via Next.js Server Actions (see `src/app/actions.ts`), ensuring secure execution of logic without exposing candidate datasets or prompt templates on the client.
@@ -20,7 +22,7 @@ The application is a monolith built with **Next.js (React)** and **Tailwind CSS*
 
 ### 3. Core Logic & Scoring
 - **Match Score Engine:** The JD and raw candidate profile are injected into an evaluation prompt. The AI outputs a strict `Match Score (0-100)` and an `explanation`.
-- **Interest Score Engine:** In the chat UI, the AI assumes the "Candidate Persona" initialized with hidden variables (e.g. "needs $180k+ to leave current job", "wants to work on LLMs"). Every recruiter message triggers an LLM turn that returns both an in-character string response *and* a silent integer `Interest Score`.
+- **Interest Score Engine (Autonomous):** The system triggers a single-shot Gemini simulation involving an "AI Recruiter" and a "Candidate Persona". The Candidate is initialized with hidden variables. The LLM generates a full 3-4 turn transcript of the pitch and negotiation, and extracts a final `Interest Score`.
 - **Global Ranking Engine:** The agent ultimately builds a final shortlist by combining technical aptitude and active interest:
   `Global Score = (Match Score * 0.6) + (Interest Score * 0.4)`
 
