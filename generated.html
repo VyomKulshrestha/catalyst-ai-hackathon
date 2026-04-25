@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>LUMINAL SCOUT | AI Intelligence Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Manrope:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary-fixed-variant": "#3e32d5",
+                    "surface-container-high": "#201f1f",
+                    "tertiary-container": "#00cffc",
+                    "on-tertiary-fixed-variant": "#004a5c",
+                    "on-error": "#490013",
+                    "on-secondary-container": "#cecbff",
+                    "tertiary-fixed-dim": "#00c0ea",
+                    "surface-variant": "#262626",
+                    "on-primary": "#47007c",
+                    "outline": "#777575",
+                    "inverse-surface": "#fcf8f8",
+                    "tertiary-fixed": "#00cffc",
+                    "secondary-fixed": "#cfcdff",
+                    "surface-container": "#1a1919",
+                    "background": "#0e0e0e",
+                    "secondary": "#9492ff",
+                    "inverse-primary": "#842cd3",
+                    "outline-variant": "#494847",
+                    "secondary-fixed-dim": "#c0bdff",
+                    "surface-container-highest": "#262626",
+                    "on-surface": "#ffffff",
+                    "on-surface-variant": "#adaaaa",
+                    "primary-fixed": "#c284ff",
+                    "surface-tint": "#cc97ff",
+                    "secondary-dim": "#645efb",
+                    "error-container": "#a70138",
+                    "secondary-container": "#3323cc",
+                    "error": "#ff6e84",
+                    "on-tertiary-container": "#004050",
+                    "primary-dim": "#9c48ea",
+                    "tertiary": "#69daff",
+                    "primary-fixed-dim": "#b971ff",
+                    "error-dim": "#d73357",
+                    "surface": "#0e0e0e",
+                    "primary-container": "#c284ff",
+                    "on-background": "#ffffff",
+                    "on-primary-container": "#360061",
+                    "on-primary-fixed-variant": "#430076",
+                    "on-secondary-fixed": "#2000b0",
+                    "surface-bright": "#2c2c2c",
+                    "on-error-container": "#ffb2b9",
+                    "on-primary-fixed": "#000000",
+                    "surface-container-lowest": "#000000",
+                    "on-tertiary": "#004a5d",
+                    "inverse-on-surface": "#565554",
+                    "on-secondary": "#120076",
+                    "on-tertiary-fixed": "#002a35",
+                    "surface-dim": "#0e0e0e",
+                    "primary": "#cc97ff",
+                    "tertiary-dim": "#00c0ea",
+                    "surface-container-low": "#131313"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Space Grotesk"],
+                    "display": ["Space Grotesk"],
+                    "body": ["Manrope"],
+                    "label": ["Manrope"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Manrope', sans-serif; background-color: #0e0e0e; color: #ffffff; }
+        .font-headline { font-family: 'Space Grotesk', sans-serif; }
+        .glass-panel { backdrop-filter: blur(30px); border-right: 1px solid rgba(255,255,255,0.05); }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .glow-primary { box-shadow: 0 0 20px rgba(204, 151, 255, 0.3); }
+        .glow-tertiary { filter: drop-shadow(0 0 8px rgba(105, 218, 255, 0.6)); }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0e0e0e; }
+        ::-webkit-scrollbar-thumb { background: #262626; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-background min-h-screen overflow-x-hidden">
+<!-- Background Orbs -->
+<div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
+<div class="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary-dim/10 blur-[120px]"></div>
+<div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-secondary-container/10 blur-[100px]"></div>
+</div>
+<!-- SideNavBar Shell -->
+<aside class="fixed left-0 top-0 h-screen w-72 bg-zinc-900/50 backdrop-blur-[30px] shadow-[0px_24px_48px_rgba(54,0,97,0.1)] flex flex-col py-8 z-50 border-r border-white/5">
+<div class="px-8 mb-12">
+<h1 class="text-2xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-indigo-400 font-headline uppercase">LUMINAL</h1>
+<p class="text-zinc-500 font-headline text-[10px] tracking-[0.2em] uppercase mt-1">Oracle V.1</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="text-zinc-500 hover:text-zinc-300 px-6 py-4 flex items-center gap-4 transition-all font-['Space_Grotesk'] text-sm tracking-wide uppercase hover:bg-white/5" href="#">
+<span class="material-symbols-outlined">psychology</span>
+<span>Intelligence</span>
+</a>
+<a class="bg-gradient-to-r from-purple-900/40 to-indigo-900/40 text-indigo-300 border-r-2 border-indigo-500 px-6 py-4 flex items-center gap-4 transition-all font-['Space_Grotesk'] text-sm tracking-wide uppercase" href="#">
+<span class="material-symbols-outlined">radar</span>
+<span>Scout Pipeline</span>
+</a>
+<a class="text-zinc-500 hover:text-zinc-300 px-6 py-4 flex items-center gap-4 transition-all font-['Space_Grotesk'] text-sm tracking-wide uppercase hover:bg-white/5" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span>Talent Market</span>
+</a>
+<a class="text-zinc-500 hover:text-zinc-300 px-6 py-4 flex items-center gap-4 transition-all font-['Space_Grotesk'] text-sm tracking-wide uppercase hover:bg-white/5" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span>Directives</span>
+</a>
+</nav>
+<div class="mt-auto pt-8 border-t border-white/5">
+<a class="text-zinc-500 hover:text-zinc-300 px-6 py-3 flex items-center gap-4 transition-all font-['Space_Grotesk'] text-sm tracking-wide uppercase hover:bg-white/5" href="#">
+<span class="material-symbols-outlined">shield</span>
+<span>Security</span>
+</a>
+<a class="text-zinc-500 hover:text-zinc-300 px-6 py-3 flex items-center gap-4 transition-all font-['Space_Grotesk'] text-sm tracking-wide uppercase hover:bg-white/5" href="#">
+<span class="material-symbols-outlined">help_outline</span>
+<span>Support</span>
+</a>
+<div class="px-6 mt-6 flex items-center gap-3">
+<img alt="System Oracle Profile" class="w-8 h-8 rounded-full bg-surface-container-highest" data-alt="close-up of a digital avatar profile picture with neon highlights and futuristic interface overlays" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAcnJCUxe8A84mOm8l4GL-6yy6ooy1-TdItlNFukfvvXf9BV9C-ITm-COcZBrszag4MkRq9j_ymlf-l6-r1R9oyhBv-OF7hi9FajJhAWDN0_BdOoaByS8s7L0V-3UvFT5WFlyHZ_KGfhn47nMtbHziFFwx4CvPrBSxN1dxwA4Ce4MfSc5t7d7VAA0JXGksfeZYlSf6HthYYjQUzmY-mdVtErw3GIWZkIllhriQ5H_rPWk17rpbQQraaldlooCwmXC4EDej7WosMDoo"/>
+<div>
+<p class="text-xs font-bold text-on-surface">Oracle V.1</p>
+<p class="text-[10px] text-zinc-500">ADMIN ACCESS</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- TopAppBar Shell -->
+<header class="fixed top-0 right-0 w-[calc(100%-18rem)] z-40 bg-black/20 backdrop-blur-md flex justify-between items-center px-12 h-20">
+<div class="flex items-center gap-8">
+<span class="font-black text-white italic tracking-widest font-headline">THE SCOUT</span>
+<nav class="hidden md:flex gap-6">
+<a class="text-zinc-400 font-medium hover:text-white transition-opacity font-['Space_Grotesk'] font-bold text-lg" href="#">Focus View</a>
+<a class="text-indigo-400 border-b border-indigo-500 pb-1 font-['Space_Grotesk'] font-bold text-lg" href="#">Archive</a>
+<a class="text-zinc-400 font-medium hover:text-white transition-opacity font-['Space_Grotesk'] font-bold text-lg" href="#">Global Filter</a>
+</nav>
+</div>
+<div class="flex items-center gap-6">
+<div class="relative flex items-center bg-zinc-900/40 rounded-full px-4 py-2 border border-white/5">
+<span class="material-symbols-outlined text-zinc-500 text-sm mr-2">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm text-zinc-300 placeholder-zinc-600 w-48" placeholder="Search Intelligence..." type="text"/>
+</div>
+<div class="flex items-center gap-4 text-zinc-400">
+<button class="hover:text-white transition-all"><span class="material-symbols-outlined">notifications_active</span></button>
+<button class="hover:text-white transition-all"><span class="material-symbols-outlined">settings</span></button>
+<img alt="Chief Scout Avatar" class="w-8 h-8 rounded-full border border-primary/30" data-alt="cyberpunk style portrait of a futuristic talent recruiter with glow elements and dark background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD-Z2p5-DMk1wxNjATH_x-CCficmRz3mty2I7rwerWyxZAq4J8aOxz90YoLKZfQWffQnpnubhO5AJpfvzGOD-yqQBXT8dw55XUh_2Goth0np_f5TXF7L9mMaeDw4y9mhjVNNDUFUdAUsu8UbI0b-lORdBNOUcV2AZI5hyE7z10AfNpTzJXmIjUmZyNHRX8SlyE29Mn9AJuhOpM5pn8gn4zUU_jZy0a5Y00s7MgtfyCgTMBfORRnU-E-h6Gy5Dp3pR3uKWeCWUbXXtM"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-72 pt-32 px-12 pb-20 relative z-10">
+<!-- Header Section -->
+<div class="flex justify-between items-end mb-12">
+<div class="space-y-2">
+<div class="flex items-center gap-3 mb-1">
+<span class="w-2 h-2 rounded-full bg-tertiary animate-pulse"></span>
+<span class="text-tertiary font-headline text-xs tracking-widest uppercase">Live Pulse Monitoring</span>
+</div>
+<h2 class="text-5xl font-black font-headline tracking-tighter uppercase leading-none">Candidate Pipeline</h2>
+<p class="text-zinc-500 max-w-xl font-body text-sm leading-relaxed">Neural analysis of top-tier AI engineering talent currently active in the luminal layer. High match probability filtered via Oracle V.1.</p>
+</div>
+<div class="flex gap-4">
+<button class="bg-surface-container-high hover:bg-surface-container-highest text-on-surface px-6 py-3 rounded-xl font-headline text-sm uppercase tracking-wider transition-all border border-white/5">
+                    Refine Parameters
+                </button>
+<button class="bg-gradient-to-r from-primary-dim to-primary text-on-primary-container px-8 py-3 rounded-xl font-headline font-bold text-sm uppercase tracking-widest glow-primary transition-transform active:scale-[0.98]">
+                    Sync Database
+                </button>
+</div>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-12 gap-6">
+<!-- Main Hero Card (Featured Candidate) -->
+<div class="col-span-12 lg:col-span-8 bg-surface-container-low rounded-[2rem] p-8 relative overflow-hidden border border-white/5">
+<div class="absolute top-0 right-0 w-1/2 h-full opacity-20 pointer-events-none">
+<div class="absolute inset-0 bg-gradient-to-l from-primary/40 to-transparent"></div>
+</div>
+<div class="relative z-10 flex flex-col md:flex-row gap-10">
+<div class="flex-shrink-0 relative">
+<div class="w-48 h-48 rounded-[2rem] overflow-hidden border-2 border-primary/20 p-1">
+<img alt="Dr. Aris Thorne" class="w-full h-full object-cover rounded-[1.8rem]" data-alt="professional portrait of a middle-aged academic researcher with glasses, cinematic lighting, futuristic digital background with code overlays" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDjhQdkmU-yUCtlq-c-sKhIuHMYvOUR0BIO8NlUN13PavjI8pCUZqGw9Nt9J43LeWZWJBs0QMwCzFJFfuqlZjgnVDD2Dj86YAb2fFK7avJqsKmsyTF2iN7QyVCA5zuRePiLaomKXOt7_W4vsUbhmS5aPryigV5sdQhgPkZvhx1gFgyqtqZblYINr42Z0ds-vTLHUAUgZmSdoWL1Nc1uOmr8JDjhGp_cKCE-j6crKLD9ajfhgONAT7AL3TMyt6L1cepgrC3cJdq-whg"/>
+</div>
+<div class="absolute -bottom-4 -right-4 bg-background p-2 rounded-full">
+<div class="relative w-16 h-16 flex items-center justify-center">
+<svg class="w-full h-full transform -rotate-90">
+<circle class="text-surface-container-highest" cx="32" cy="32" fill="transparent" r="28" stroke="currentColor" stroke-width="4"></circle>
+<circle class="text-tertiary glow-tertiary" cx="32" cy="32" fill="transparent" r="28" stroke="currentColor" stroke-dasharray="175.9" stroke-dashoffset="3.5" stroke-width="4"></circle>
+</svg>
+<span class="absolute text-xs font-headline font-black text-white">98%</span>
+</div>
+</div>
+</div>
+<div class="flex-1 space-y-6">
+<div>
+<div class="flex items-center gap-3 mb-2">
+<span class="bg-primary/10 text-primary text-[10px] px-2 py-0.5 rounded font-headline uppercase tracking-tighter border border-primary/20">Elite Tier</span>
+<span class="text-zinc-500 text-xs font-headline tracking-widest uppercase">ID: ALPHA-001</span>
+</div>
+<h3 class="text-4xl font-headline font-bold mb-1">Dr. Aris Thorne</h3>
+<p class="text-indigo-300 font-headline text-lg uppercase tracking-wide">Principal AI Architect • LLM Specialization</p>
+</div>
+<div class="flex flex-wrap gap-2">
+<span class="px-4 py-1.5 rounded-full bg-surface-container-high text-on-surface-variant text-xs font-label uppercase tracking-widest border border-white/5 transition-all hover:bg-surface-container-highest hover:text-white">Neural Networks</span>
+<span class="px-4 py-1.5 rounded-full bg-surface-container-high text-on-surface-variant text-xs font-label uppercase tracking-widest border border-white/5 transition-all hover:bg-surface-container-highest hover:text-white">PyTorch</span>
+<span class="px-4 py-1.5 rounded-full bg-surface-container-high text-on-surface-variant text-xs font-label uppercase tracking-widest border border-white/5 transition-all hover:bg-surface-container-highest hover:text-white">LLMs</span>
+<span class="px-4 py-1.5 rounded-full bg-surface-container-high text-on-surface-variant text-xs font-label uppercase tracking-widest border border-white/5 transition-all hover:bg-surface-container-highest hover:text-white">Transformers</span>
+</div>
+<div class="grid grid-cols-3 gap-4 pt-4 border-t border-white/5">
+<div>
+<p class="text-[10px] text-zinc-500 uppercase tracking-widest mb-1">Experience</p>
+<p class="text-white font-headline font-bold">12+ Years</p>
+</div>
+<div>
+<p class="text-[10px] text-zinc-500 uppercase tracking-widest mb-1">Location</p>
+<p class="text-white font-headline font-bold">London, UK</p>
+</div>
+<div>
+<p class="text-[10px] text-zinc-500 uppercase tracking-widest mb-1">Availability</p>
+<p class="text-tertiary font-headline font-bold">Immediate</p>
+</div>
+</div>
+<div class="pt-2">
+<button class="w-full bg-gradient-to-r from-primary-dim to-primary text-on-primary-container px-8 py-4 rounded-xl font-headline font-black text-sm uppercase tracking-widest glow-primary transition-all hover:scale-[1.02] active:scale-[0.98]">
+                                Engage Candidate
+                            </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Stats Card 1 -->
+<div class="col-span-12 md:col-span-4 bg-surface-container-low rounded-[2rem] p-8 border border-white/5 flex flex-col justify-between">
+<div>
+<p class="text-zinc-500 font-headline text-xs tracking-widest uppercase mb-4">Pipeline Velocity</p>
+<div class="text-6xl font-headline font-black tracking-tighter text-white mb-2">+42%</div>
+<p class="text-tertiary text-xs">Matching accuracy increased vs last epoch</p>
+</div>
+<div class="h-24 w-full flex items-end gap-1 overflow-hidden pt-4">
+<div class="w-full bg-tertiary/20 h-[30%] rounded-t-sm"></div>
+<div class="w-full bg-tertiary/20 h-[50%] rounded-t-sm"></div>
+<div class="w-full bg-tertiary/20 h-[40%] rounded-t-sm"></div>
+<div class="w-full bg-tertiary/20 h-[70%] rounded-t-sm"></div>
+<div class="w-full bg-tertiary/40 h-[90%] rounded-t-sm"></div>
+<div class="w-full bg-tertiary/60 h-[80%] rounded-t-sm"></div>
+<div class="w-full bg-tertiary h-[100%] rounded-t-sm glow-tertiary"></div>
+</div>
+</div>
+<!-- List Section: Secondary Candidates -->
+<div class="col-span-12 space-y-4">
+<h4 class="font-headline font-bold text-xl uppercase tracking-widest px-4 border-l-4 border-primary">High Potential Matches</h4>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<!-- Card 2 -->
+<div class="bg-surface-container rounded-3xl p-6 border border-white/5 hover:bg-surface-container-high transition-all group">
+<div class="flex justify-between items-start mb-6">
+<img alt="Sarah Kincaid" class="w-14 h-14 rounded-2xl grayscale group-hover:grayscale-0 transition-all" data-alt="headshot of a young female software engineer with a modern minimal aesthetic and soft natural lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCyngeoFZXy4sWMpB7g_Y-9yaZWtJNS0dIUAfXNlHfD0EfhTpdJYGFDaUHSUXi-R3j0zSNH-3sZS7DtkauRzVDwEH3UaDtwAjjnMj5XEzDy70fQ-1CW5H-Jz24E800YuckHC1-xDhF6cBapTyTb1NA9rA0LhQ3OX4ykH46AEkiDTegUvHgcsucbTiwo82MMu2UQ0ZPE0HcbgGUONqW2EKiCaXBWD1ocJuMC8MmCr3j8p9AL0zn37Hk3_-nDH6t9WykLG9Ec3qCovCs"/>
+<div class="relative w-12 h-12 flex items-center justify-center">
+<svg class="w-full h-full transform -rotate-90">
+<circle class="text-surface-container-highest" cx="24" cy="24" fill="transparent" r="20" stroke="currentColor" stroke-width="3"></circle>
+<circle class="text-tertiary" cx="24" cy="24" fill="transparent" r="20" stroke="currentColor" stroke-dasharray="125.6" stroke-dashoffset="10" stroke-width="3"></circle>
+</svg>
+<span class="absolute text-[10px] font-headline font-bold text-white">92%</span>
+</div>
+</div>
+<h5 class="text-lg font-headline font-bold text-white">Elena Vance</h5>
+<p class="text-zinc-500 text-xs font-headline uppercase mb-4 tracking-tighter">Computer Vision Lead</p>
+<div class="flex flex-wrap gap-1.5 mb-6">
+<span class="text-[9px] px-2 py-0.5 rounded-full bg-black/40 text-zinc-400 border border-white/5 uppercase font-label">OpenCV</span>
+<span class="text-[9px] px-2 py-0.5 rounded-full bg-black/40 text-zinc-400 border border-white/5 uppercase font-label">GANs</span>
+</div>
+<button class="w-full py-3 rounded-xl bg-white/5 text-white font-headline text-[10px] uppercase tracking-[0.2em] group-hover:bg-primary group-hover:text-on-primary-container transition-all">
+                            Review Dossier
+                        </button>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface-container rounded-3xl p-6 border border-white/5 hover:bg-surface-container-high transition-all group">
+<div class="flex justify-between items-start mb-6">
+<img alt="Jules Moreno" class="w-14 h-14 rounded-2xl grayscale group-hover:grayscale-0 transition-all" data-alt="portrait of a male tech specialist with cool lighting and futuristic aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuARMBSONsBEVpNdgwjzoe3E4GHgf_48siirgE7-LzCrqjZsD9Haz1DMZa63wUMCVIvSpdNHfOclxPAAEa2DJyxynNIP4YIxQ7Y65XVgdEWadXQYUhob35GbASJJvsWhc_-JOC0aIPdxIZ_vuC9EBQ5aky7Ye_Qd8eMnqC-2SoD0L7-9Jz_YG4ok_PzhcwkoFXTdhhtjWSIuJOwLl6o6WByl2-smahTm9U3rsYqImqPK7U-xTMvSmEGhjo9vQGVcjs5XE94wMcHkKzo"/>
+<div class="relative w-12 h-12 flex items-center justify-center">
+<svg class="w-full h-full transform -rotate-90">
+<circle class="text-surface-container-highest" cx="24" cy="24" fill="transparent" r="20" stroke="currentColor" stroke-width="3"></circle>
+<circle class="text-tertiary" cx="24" cy="24" fill="transparent" r="20" stroke="currentColor" stroke-dasharray="125.6" stroke-dashoffset="18.8" stroke-width="3"></circle>
+</svg>
+<span class="absolute text-[10px] font-headline font-bold text-white">85%</span>
+</div>
+</div>
+<h5 class="text-lg font-headline font-bold text-white">Marcus Chen</h5>
+<p class="text-zinc-500 text-xs font-headline uppercase mb-4 tracking-tighter">RL Specialist</p>
+<div class="flex flex-wrap gap-1.5 mb-6">
+<span class="text-[9px] px-2 py-0.5 rounded-full bg-black/40 text-zinc-400 border border-white/5 uppercase font-label">Q-Learning</span>
+<span class="text-[9px] px-2 py-0.5 rounded-full bg-black/40 text-zinc-400 border border-white/5 uppercase font-label">Robotics</span>
+</div>
+<button class="w-full py-3 rounded-xl bg-white/5 text-white font-headline text-[10px] uppercase tracking-[0.2em] group-hover:bg-primary group-hover:text-on-primary-container transition-all">
+                            Review Dossier
+                        </button>
+</div>
+<!-- Card 4 -->
+<div class="bg-surface-container rounded-3xl p-6 border border-white/5 hover:bg-surface-container-high transition-all group">
+<div class="flex justify-between items-start mb-6">
+<img alt="Sia Yang" class="w-14 h-14 rounded-2xl grayscale group-hover:grayscale-0 transition-all" data-alt="creative portrait of a female developer with ambient blue lighting and coding elements in background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAYN0QwBRIeXZ-ih07fqeMVYVZffpBZ4tCravuRrdlewGwisGXqSJedpCW7CNJyUZwT73oEddqWtHVVayEs0_mtnp8vSqoZgnaitanCXZ1nNKNYiAiG5K1H0mclS9HNOEPizvDmEQZTQnr2_tzg_VFhzNilHP3MNI0qch-BVE4vAPGlz0-4mCUc-e1iNexwA-WkR5Wrf8xkcDt28wgkGF84pNWkDgI_7FIhNRraDSpu64i1t7e5TAmpRFARVI30o7m6uYAOcyZOEVM"/>
+<div class="relative w-12 h-12 flex items-center justify-center">
+<svg class="w-full h-full transform -rotate-90">
+<circle class="text-surface-container-highest" cx="24" cy="24" fill="transparent" r="20" stroke="currentColor" stroke-width="3"></circle>
+<circle class="text-tertiary" cx="24" cy="24" fill="transparent" r="20" stroke="currentColor" stroke-dasharray="125.6" stroke-dashoffset="25.1" stroke-width="3"></circle>
+</svg>
+<span class="absolute text-[10px] font-headline font-bold text-white">80%</span>
+</div>
+</div>
+<h5 class="text-lg font-headline font-bold text-white">Lara Croft</h5>
+<p class="text-zinc-500 text-xs font-headline uppercase mb-4 tracking-tighter">AI Governance Lead</p>
+<div class="flex flex-wrap gap-1.5 mb-6">
+<span class="text-[9px] px-2 py-0.5 rounded-full bg-black/40 text-zinc-400 border border-white/5 uppercase font-label">Ethics</span>
+<span class="text-[9px] px-2 py-0.5 rounded-full bg-black/40 text-zinc-400 border border-white/5 uppercase font-label">Regulation</span>
+</div>
+<button class="w-full py-3 rounded-xl bg-white/5 text-white font-headline text-[10px] uppercase tracking-[0.2em] group-hover:bg-primary group-hover:text-on-primary-container transition-all">
+                            Review Dossier
+                        </button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Contextual FAB -->
+<button class="fixed bottom-8 right-8 w-16 h-16 bg-primary rounded-full glow-primary flex items-center justify-center text-on-primary shadow-2xl transition-transform hover:scale-110 active:scale-95 z-50">
+<span class="material-symbols-outlined text-3xl">add</span>
+</button>
+</body></html>
