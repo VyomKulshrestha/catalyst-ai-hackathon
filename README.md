@@ -5,17 +5,24 @@
 An AI-Powered Talent Scouting & Engagement Agent built for the Deccan AI Catalyst Hackathon.
 
 ## Overview
-Recruiters spend hours sifting through profiles and chasing candidate interest. Luminal Scout autonomously parses a Job Description (JD), discovers matching candidates from a database, and *autonomously* engages them in the background using a simulated AI-to-AI conversation to gauge their genuine interest. It outputs a composite final ranking based on both the technical fit (Match Score) and the candidate's responsiveness (Interest Score).
+Recruiters spend hours sifting through profiles and chasing candidate interest. Luminal Scout automates the *discovery* and *early engagement* phases. It ingests a Job Description (JD) and a raw talent database (exported from an ATS or LinkedIn), matches candidates, and *autonomously* engages them in the background using a simulated AI-to-AI conversation to gauge genuine interest. 
+
+It outputs a composite final ranking based on both technical fit (Match Score) and the candidate's responsiveness (Interest Score).
+
+## Core Features
+1. **Multi-Model Intelligence:** Not locked into one ecosystem. Users can select between **Gemini 2.5 Flash**, **OpenAI (GPT-4o)**, or **Anthropic (Claude 3.5)** depending on their API keys. (If no key is provided, it safely falls back to the server's default key).
+2. **Dynamic ATS / Database Ingestion:** Companies typically receive candidate lists via exports from ATS systems (Greenhouse, Workable) or sourcing tools (Apollo, LinkedIn). Luminal Scout natively accepts **.CSV or .JSON file uploads** to dynamically populate the candidate pool for any search.
+3. **Autonomous Engagement Simulation:** The Agent spins up a background simulation where the "AI Recruiter" pitches the role to a "Candidate persona" (who evaluates the pitch based on hidden salary/job satisfaction variables).
 
 ## Architecture & Logic
-*(For the full architecture, approach, trade-offs, and tool declarations, see the [WRITE_UP.md](./WRITE_UP.md))*
+*(For the full architecture, approach, and trade-offs, see the [WRITE_UP.md](./WRITE_UP.md))*
 
 1. **Job Description Parsing & Matching**
-   - **Input:** User provides a JD text and their Gemini API key.
-   - **Matching Engine:** We use Gemini 2.5 Flash to compare the JD against our internal `candidates.json` mock database. It generates a **Match Score (0-100)** and a technical explanation of *why* the candidate fits the role.
+   - **Input:** User provides a JD text and uploads their CSV/JSON candidate database.
+   - **Matching Engine:** The selected AI model compares the JD against the database, generating a **Match Score (0-100)** and a technical explanation.
 
 2. **Autonomous Engagement Simulation**
-   - **Execution:** Instead of a simple chatbot interface, the user clicks "Delegate Agent Outreach". The Agent takes over and spins up an autonomous simulation where the AI Recruiter pitches the role to the Candidate persona (who evaluates the pitch based on their hidden salary expectations and current job satisfaction).
+   - **Execution:** Instead of manual chatting, the user clicks "Delegate Agent Outreach". The Agent takes over and negotiates with the candidate autonomously.
    - **Interest Extraction:** The Agent handles the entire 3-4 turn negotiation autonomously, extracts the final **Interest Score (0-100)**, and generates an Agent Interaction Log (Transcript) for the user to read.
 
 3. **Global Ranking**

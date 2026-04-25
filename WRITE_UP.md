@@ -13,12 +13,16 @@ The application is a monolith built with **Next.js (React)** and **Tailwind CSS*
 ### 1. Frontend (UI Layer)
 - **Framework:** Next.js (Client Components)
 - **Styling:** Tailwind CSS, `framer-motion` for fluid pipeline transitions. High-end "Luminal Scout" design system generated via StitchMCP (dark mode, glassmorphism, glowing telemetry).
-- **State Management:** React `useState` and `useRef` to govern the pipeline progression (API Key -> JD Input -> Loading -> Dashboard -> Autonomous Agent Transcript -> Final Ranking).
+- **State Management:** React `useState` and `useRef` to govern the pipeline progression.
+- **Data Ingestion:** Uses `papaparse` to accept `.CSV` or `.JSON` database uploads directly in the UI, mimicking how companies extract candidate graphs from ATS platforms (Greenhouse, Workable) or sourcing tools (LinkedIn, Apollo).
 
 ### 2. Backend (Server Actions)
 - **Logic:** Handled natively via Next.js Server Actions (see `src/app/actions.ts`), ensuring secure execution of logic without exposing candidate datasets or prompt templates on the client.
-- **AI Inference Engine:** We use **Google Gemini 2.5 Flash** (via `@google/genai` sdk) operating in structured JSON mode (`responseMimeType: "application/json"`).
-- **Candidate Data:** An internal JSON file (`src/data/candidates.json`) acts as the mock candidate graph.
+- **Multi-Model Inference Engine:** The system routes requests dynamically based on the user's provider choice, using the official SDKs:
+  - **Google Gemini 2.5 Flash** (`@google/genai`)
+  - **OpenAI GPT-4o** (`openai`)
+  - **Anthropic Claude 3.5** (`@anthropic-ai/sdk`)
+- **JSON Structure Mode:** All models are prompted or configured strictly for structured JSON output to seamlessly flow into the Next.js frontend state.
 
 ### 3. Core Logic & Scoring
 - **Match Score Engine:** The JD and raw candidate profile are injected into an evaluation prompt. The AI outputs a strict `Match Score (0-100)` and an `explanation`.

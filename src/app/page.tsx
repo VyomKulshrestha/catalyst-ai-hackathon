@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Papa from "papaparse";
 import { processJobDescription, autonomousEngageCandidate, MatchResult, AutonomousEngagementResult } from "./actions";
 import defaultCandidates from "@/data/candidates.json";
 
@@ -40,15 +41,32 @@ export default function Home() {
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    if (file.name.endsWith(".csv")) {
+      Papa.parse(file, {
+        header: true,
+        skipEmptyLines: true,
+        complete: (results) => {
+          if (results.data && Array.isArray(results.data)) {
+            setCandidatesList(results.data);
+            alert("Successfully loaded " + results.data.length + " candidates from CSV database.");
+          }
+        },
+        error: (error: any) => {
+          alert("Failed to parse CSV file: " + error.message);
+        }
+      });
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = (event) => {
       try {
         const text = event.target?.result as string;
-        // Simple JSON parsing for hackathon constraints
         const data = JSON.parse(text);
         if (Array.isArray(data)) {
            setCandidatesList(data);
-           alert("Successfully loaded " + data.length + " candidates from database.");
+           alert("Successfully loaded " + data.length + " candidates from JSON database.");
         }
       } catch (err) {
         alert("Failed to parse database file. Ensure it is a valid JSON array.");
@@ -182,8 +200,8 @@ export default function Home() {
                    <p className="text-xs text-zinc-500">Currently loaded: {candidatesList.length} profiles</p>
                 </div>
                 <label className="cursor-pointer bg-[#262626] hover:bg-[#333] border border-[#494847]/30 text-zinc-300 px-4 py-2 rounded-lg font-headline text-xs tracking-widest uppercase transition-all">
-                   Upload JSON DB
-                   <input type="file" accept=".json" onChange={handleFileUpload} className="hidden" />
+                   Upload JSON / CSV
+                   <input type="file" accept=".json,.csv" onChange={handleFileUpload} className="hidden" />
                 </label>
               </div>
               <button 
