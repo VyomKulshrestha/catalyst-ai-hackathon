@@ -1,7 +1,6 @@
 "use server";
 
 import { GoogleGenAI } from "@google/genai";
-import candidates from "@/data/candidates.json";
 
 /**
  * Represents the structured Output of the Job Description Matching Engine.
@@ -23,16 +22,18 @@ export interface MatchResult {
  * profile and the JD to Gemini. Gemini acts as an expert recruiter and evaluates
  * the compatibility, outputting a precise score and an actionable explanation.
  * 
- * @param apiKey - User's Gemini API Key
+ * @param apiKey - User's Gemini API Key (Optional if server has GEMINI_API_KEY env var)
  * @param jd - Raw Job Description text
+ * @param candidatesList - Dynamic array of candidates to process
  * @returns Array of Candidates with initial Match Scores, sorted descending.
  */
-export async function processJobDescription(apiKey: string, jd: string): Promise<MatchResult[]> {
-  if (!apiKey) throw new Error("API Key is required");
-  const ai = new GoogleGenAI({ apiKey });
+export async function processJobDescription(apiKey: string | undefined, jd: string, candidatesList: any[]): Promise<MatchResult[]> {
+  const keyToUse = apiKey || process.env.GEMINI_API_KEY;
+  if (!keyToUse) throw new Error("API Key is required or must be set in Vercel environment variables.");
+  const ai = new GoogleGenAI({ apiKey: keyToUse });
   const results: MatchResult[] = [];
 
-  for (const candidate of candidates) {
+  for (const candidate of candidatesList) {
     const prompt = `You are an expert technical recruiter analyzing a candidate's fit for a job description.
 Job Description:
 ${jd}
@@ -100,12 +101,15 @@ export interface AutonomousEngagementResult {
  * To fulfill the "Agentic AI" requirement, the user does not manually chat. The AI agent 
  * handles the outreach, pitches the JD, handles objections based on the candidate's salary 
  * and personality expectations, and outputs a transcript and a final Interest Score.
+ * @param apiKey - User's Gemini API Key
+ * @param candidate - The candidate object being engaged
+ * @param jd - The original job description for context
  */
-export async function autonomousEngageCandidate(apiKey: string, candidateId: string, jd: string): Promise<AutonomousEngagementResult> {
-  if (!apiKey) throw new Error("API Key is required");
-  const ai = new GoogleGenAI({ apiKey });
+export async function autonomousEngageCandidate(apiKey: string | undefined, candidate: any, jd: string): Promise<AutonomousEngagementResult> {
+  const keyToUse = apiKey || process.env.GEMINI_API_KEY;
+  if (!keyToUse) throw new Error("API Key is required or must be set in Vercel environment variables.");
+  const ai = new GoogleGenAI({ apiKey: keyToUse });
   
-  const candidate = candidates.find(c => c.id === candidateId);
   if (!candidate) throw new Error("Candidate not found");
 
   const prompt = `You are the core intelligence of "LUMINAL SCOUT", an autonomous AI recruiting agent.

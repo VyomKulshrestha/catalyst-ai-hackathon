@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { processJobDescription, autonomousEngageCandidate, MatchResult, AutonomousEngagementResult } from "./actions";
+import defaultCandidates from "@/data/candidates.json";
 
 export default function Home() {
   const [apiKey, setApiKey] = useState("");
@@ -10,6 +11,7 @@ export default function Home() {
   const [jd, setJd] = useState("");
   const [step, setStep] = useState<"API" | "JD" | "LOADING" | "RESULTS" | "ENGAGING" | "TRANSCRIPT" | "FINAL">("API");
   
+  const [candidatesList, setCandidatesList] = useState<any[]>(defaultCandidates);
   const [matchResults, setMatchResults] = useState<MatchResult[]>([]);
   const [activeCandidateId, setActiveCandidateId] = useState<string | null>(null);
   
@@ -25,13 +27,33 @@ export default function Home() {
     if (!jd.trim()) return;
     setStep("LOADING");
     try {
-      const results = await processJobDescription(apiKey, jd);
+      const results = await processJobDescription(apiKey || undefined, jd, candidatesList);
       setMatchResults(results);
       setStep("RESULTS");
-    } catch (e) {
-      alert("Error processing JD. Please check your API key.");
+    } catch (e: any) {
+      alert("Error processing JD: " + e.message);
       setStep("API");
     }
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const text = event.target?.result as string;
+        // Simple JSON parsing for hackathon constraints
+        const data = JSON.parse(text);
+        if (Array.isArray(data)) {
+           setCandidatesList(data);
+           alert("Successfully loaded " + data.length + " candidates from database.");
+        }
+      } catch (err) {
+        alert("Failed to parse database file. Ensure it is a valid JSON array.");
+      }
+    };
+    reader.readAsText(file);
   };
 
   const handleAutonomousEngagement = async (candidateId: string) => {
@@ -39,11 +61,12 @@ export default function Home() {
     setStep("ENGAGING");
     
     try {
-      const res = await autonomousEngageCandidate(apiKey, candidateId, jd);
+      const candidateObj = candidatesList.find(c => c.id === candidateId || c.candidateId === candidateId);
+      const res = await autonomousEngageCandidate(apiKey || undefined, candidateObj, jd);
       setEngagementResults(prev => ({ ...prev, [candidateId]: res }));
       setStep("TRANSCRIPT");
-    } catch (e) {
-      alert("Failed to engage candidate autonomously.");
+    } catch (e: any) {
+      alert("Failed to engage candidate: " + e.message);
       setStep("RESULTS");
     }
   };
@@ -107,15 +130,14 @@ export default function Home() {
               </div>
               <input 
                 type="password" 
-                placeholder="AIzaSy..." 
+                placeholder="AIzaSy... (Leave blank to use Server Key)" 
                 value={apiKey}
                 onChange={e => setApiKey(e.target.value)}
                 className="w-full bg-[#000000] border border-[#494847]/30 rounded-xl px-5 py-4 focus:outline-none focus:border-[#cc97ff] focus:shadow-[0_0_10px_rgba(204,151,255,0.2)] transition-all text-white mb-8"
               />
               <button 
-                onClick={() => { if (apiKey) { setApiKeySaved(true); setStep("JD"); } }}
-                disabled={!apiKey}
-                className="w-full bg-gradient-to-r from-[#9c48ea] to-[#cc97ff] text-[#360061] px-8 py-4 rounded-xl font-headline font-black text-sm uppercase tracking-widest glow-primary transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+                onClick={() => { setApiKeySaved(true); setStep("JD"); }}
+                className="w-full bg-gradient-to-r from-[#9c48ea] to-[#cc97ff] text-[#360061] px-8 py-4 rounded-xl font-headline font-black text-sm uppercase tracking-widest glow-primary transition-all hover:scale-[1.02] active:scale-[0.98]"
               >
                 Initialize Agent
               </button>
@@ -134,11 +156,21 @@ export default function Home() {
                 value={jd}
                 onChange={e => setJd(e.target.value)}
                 placeholder="Looking for a Senior AI Engineer..."
-                className="w-full h-64 bg-[#000000] border border-[#494847]/30 rounded-xl p-5 focus:outline-none focus:border-[#69daff] transition-all text-white resize-none mb-8 font-body text-sm"
+                className="w-full h-48 bg-[#000000] border border-[#494847]/30 rounded-xl p-5 focus:outline-none focus:border-[#69daff] transition-all text-white resize-none mb-6 font-body text-sm"
               />
+              <div className="mb-8 border border-white/5 rounded-xl p-4 bg-[#0e0e0e] flex items-center justify-between">
+                <div>
+                   <h3 className="font-headline text-sm font-bold text-white mb-1">Talent Database</h3>
+                   <p className="text-xs text-zinc-500">Currently loaded: {candidatesList.length} profiles</p>
+                </div>
+                <label className="cursor-pointer bg-[#262626] hover:bg-[#333] border border-[#494847]/30 text-zinc-300 px-4 py-2 rounded-lg font-headline text-xs tracking-widest uppercase transition-all">
+                   Upload JSON DB
+                   <input type="file" accept=".json" onChange={handleFileUpload} className="hidden" />
+                </label>
+              </div>
               <button 
                 onClick={handleStartSearch}
-                disabled={!jd.trim()}
+                disabled={!jd.trim() || candidatesList.length === 0}
                 className="w-full bg-gradient-to-r from-[#00c0ea] to-[#69daff] text-[#004050] px-8 py-4 rounded-xl font-headline font-black text-sm uppercase tracking-widest glow-tertiary transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
               >
                 Launch Discovery Protocol
