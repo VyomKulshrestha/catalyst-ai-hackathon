@@ -14,25 +14,132 @@ It outputs a composite final ranking based on both technical fit (Match Score) a
 2. **Dynamic ATS / Database Ingestion:** Companies typically receive candidate lists via exports from ATS systems (Greenhouse, Workable) or sourcing tools (Apollo, LinkedIn). Luminal Scout natively accepts **.CSV or .JSON file uploads** to dynamically populate the candidate pool for any search.
 3. **Autonomous Engagement Simulation:** The Agent spins up a background simulation where the "AI Recruiter" pitches the role to a "Candidate persona" (who evaluates the pitch based on hidden salary/job satisfaction variables).
 
+---
+
+## Architecture Diagram
+```mermaid
+graph TD
+    A[Recruiter] -->|1. Selects Model & Uploads CSV/JSON| B(Next.js Frontend)
+    B -->|2. Submits Job Description| C{Server Actions Layer}
+    
+    subgraph Match Engine
+        C -->|3a. JD + Candidate Data| D[LLM: Match Scoring]
+        D -->|Match Score 0-100| E(Match Dashboard)
+    end
+    
+    subgraph Autonomous Engagement Engine
+        E -->|3b. Delegate Outreach| F[LLM: AI Recruiter vs Persona]
+        F -->|Simulated Negotiation| G[Transcript Generation]
+        G -->|Interest Score 0-100| H(Final Ranking Engine)
+    end
+    
+    H -->|Global Score = M*0.6 + I*0.4| I[Final Curated Shortlist]
+```
+
 ## Architecture & Logic
-*(For the full architecture, approach, and trade-offs, see the [WRITE_UP.md](./WRITE_UP.md))*
+The application is a monolith built with **Next.js (React)** and **Tailwind CSS**, deployed directly to Vercel.
 
-1. **Job Description Parsing & Matching**
-   - **Input:** User provides a JD text and uploads their CSV/JSON candidate database.
-   - **Matching Engine:** The selected AI model compares the JD against the database, generating a **Match Score (0-100)** and a technical explanation.
+### 1. Frontend (UI Layer)
+- **Framework:** Next.js (Client Components)
+- **Styling:** Tailwind CSS, `framer-motion` for fluid pipeline transitions. High-end "Luminal Scout" design system generated via StitchMCP (dark mode, glassmorphism, glowing telemetry).
+- **State Management:** React `useState` and `useRef` to govern the pipeline progression.
+- **Data Ingestion:** Uses `papaparse` to accept `.CSV` or `.JSON` database uploads directly in the UI, mimicking how companies extract candidate graphs from ATS platforms.
 
-2. **Autonomous Engagement Simulation**
-   - **Execution:** Instead of manual chatting, the user clicks "Delegate Agent Outreach". The Agent takes over and negotiates with the candidate autonomously.
-   - **Interest Extraction:** The Agent handles the entire 3-4 turn negotiation autonomously, extracts the final **Interest Score (0-100)**, and generates an Agent Interaction Log (Transcript) for the user to read.
+### 2. Backend (Server Actions)
+- **Logic:** Handled natively via Next.js Server Actions (`src/app/actions.ts`), ensuring secure execution of logic without exposing candidate datasets or prompt templates on the client.
+- **Multi-Model Inference Engine:** The system routes requests dynamically based on the user's provider choice:
+  - **Google Gemini 2.5 Flash** (`@google/genai`)
+  - **OpenAI GPT-4o-mini** (`openai`)
+  - **Anthropic Claude 3.5 Haiku** (`@anthropic-ai/sdk`)
+- **JSON Structure Mode:** All models are prompted or configured strictly for structured JSON output to seamlessly flow into the Next.js frontend state.
+- **Batched Engine Optimization:** To prevent Vercel Serverless Function timeouts, the Match Engine compiles all candidates into a single JSON payload and scores them simultaneously, dropping processing latency from 20s+ to ~2s.
 
-3. **Global Ranking**
-   - **Scoring:** The agent generates a final pipeline combining `(Match Score * 0.6) + (Interest Score * 0.4)` to yield a **Global Score**. The recruiter can immediately make an offer to the highest-scoring candidate.
+### 3. Core Logic & Scoring
+- **Match Score Engine:** The JD and raw candidate profile are injected into an evaluation prompt. The AI outputs a strict `Match Score (0-100)` and an `explanation`.
+- **Interest Score Engine (Autonomous):** The system triggers a single-shot Gemini simulation involving an "AI Recruiter" and a "Candidate Persona". The Candidate is initialized with hidden variables. The LLM generates a full 3-4 turn transcript of the pitch and negotiation, and extracts a final `Interest Score`.
+- **Global Ranking Engine:** The agent ultimately builds a final shortlist by combining technical aptitude and active interest:
+  `Global Score = (Match Score * 0.6) + (Interest Score * 0.4)`
+
+---
+
+## Sample Inputs and Outputs
+
+### Sample Input (CSV Data ingested by the system)
+```json
+[
+  {
+    "id": "c1",
+    "name": "Alex Chen",
+    "role": "Senior ML Engineer",
+    "skills": "Python, PyTorch, LLMs, RAG, AWS",
+    "experience": "5 years building recommendation systems at Spotify",
+    "location": "Remote",
+    "salary_expectation": "180k",
+    "personality_context": "Direct, values technical challenges, unhappy with current corporate bureaucracy"
+  }
+]
+```
+
+### Sample Input (Job Description)
+```text
+Looking for a Senior AI Engineer to join our fast-paced startup. 
+Must have experience deploying LLMs, building RAG pipelines, and strong Python/PyTorch skills. 
+We operate fully remote. Budget: $150k - $170k.
+```
+
+### Sample Output (Match Score Phase)
+```json
+{
+  "candidateId": "c1",
+  "matchScore": 92,
+  "explanation": "Alex has exact overlap with PyTorch, LLMs, and RAG pipelines. However, their salary expectation ($180k) is slightly above the max budget ($170k)."
+}
+```
+
+### Sample Output (Engagement Phase Transcript & Interest Score)
+```json
+{
+  "interestScore": 45,
+  "transcript": [
+    {
+      "speaker": "AI Recruiter",
+      "text": "Hi Alex! I'm scouting for a fast-paced startup looking for a Senior AI Engineer to build RAG pipelines. It's fully remote with a budget of $170k. Would this interest you?"
+    },
+    {
+      "speaker": "Candidate",
+      "text": "The technical stack sounds perfect, especially getting away from corporate bureaucracy. However, my hard floor for moving right now is $180k. Is there any flexibility on the budget?"
+    },
+    {
+      "speaker": "AI Recruiter",
+      "text": "I completely understand. While $170k is the stated budget, fast-paced startups often have equity upside or signing bonuses we could discuss. Would you be open to an introductory call?"
+    },
+    {
+      "speaker": "Candidate",
+      "text": "I'd take the call to hear about the equity, but I'm hesitant to move without the base salary match."
+    }
+  ]
+}
+```
+
+### Final Global Score Output
+`Global Score: 73.2` *(92 Match * 0.6 + 45 Interest * 0.4)*. The recruiter immediately sees Alex is a great technical fit, but high flight risk due to the salary gap, saving a wasted initial phone screen.
+
+---
+
+## APIs & Tools Declared
+- **Google Gemini API**, **OpenAI API**, **Anthropic API**: Used exclusively for Match reasoning, generating explainability, and candidate persona simulation. (Free/Trial tiers used, no credits provided).
+- **Next.js & React**: Core web framework.
+- **Framer Motion**: Animations.
+- **Tailwind CSS**: Styling and UI aesthetics.
+- **PapaParse**: CSV processing engine.
+
+---
 
 ## How to Run Locally
 
 ### Prerequisites
 - Node.js (v18+)
-- A Gemini API Key from Google AI Studio.
+- An API Key from Google AI Studio, OpenAI, or Anthropic.
 
 ### Steps
 1. Clone the repository.
@@ -49,21 +156,7 @@ It outputs a composite final ranking based on both technical fit (Match Score) a
    npm run dev
    ```
 4. Open [http://localhost:3000](http://localhost:3000) with your browser.
-5. Provide your Gemini API key in the UI and test the scout!
-
-## Sample Inputs and Outputs
-**Sample JD Input:**
-> "We are looking for a Senior AI Engineer deeply experienced with Python, PyTorch, and deploying LLMs. Must have 5+ years of experience. We offer competitive salary up to $180k."
-
-**Sample Match Output:**
-> Alice Chen (Senior AI Engineer) - Match 95%. "Alice aligns perfectly with the required 5+ years of experience and core skills in Python, PyTorch, and LLMs. Her current role heavily prepares her for this position."
-
-**Sample Engagement Output (Agent Log):**
-> *AI Recruiter:* We are looking for a Senior AI Engineer deeply experienced with Python and LLMs. The salary goes up to $180k. Would you be interested?
-> *Candidate:* That sounds extremely compelling. I am currently making $150k but I am looking to step into a Senior role with a pay bump.
-> *AI Recruiter:* Perfect, you exceed the 5+ years of experience required. Let's get you on a call with the hiring manager.
-> *Candidate:* I would love to. Please send me the details.
-> *(Final Interest Score: 90%)*
+5. Provide your API key in the UI, upload a CSV of candidates, and test the scout!
 
 ## Demo Video
 *(Your Demo Video Link Here)*
