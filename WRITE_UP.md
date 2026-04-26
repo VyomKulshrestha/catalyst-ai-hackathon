@@ -10,6 +10,26 @@ Automating talent acquisition usually stops at parsing resumes and matching keyw
 ## Architecture
 The application is a monolith built with **Next.js (React)** and **Tailwind CSS**, deployed directly to Vercel.
 
+### Architecture Diagram
+```mermaid
+graph TD
+    A[Recruiter] -->|1. Selects Model & Uploads CSV/JSON| B(Next.js Frontend)
+    B -->|2. Submits Job Description| C{Server Actions Layer}
+    
+    subgraph Match Engine
+        C -->|3a. JD + Candidate Data| D[LLM: Match Scoring]
+        D -->|Match Score 0-100| E(Match Dashboard)
+    end
+    
+    subgraph Autonomous Engagement Engine
+        E -->|3b. Delegate Outreach| F[LLM: AI Recruiter vs Persona]
+        F -->|Simulated Negotiation| G[Transcript Generation]
+        G -->|Interest Score 0-100| H(Final Ranking Engine)
+    end
+    
+    H -->|Global Score = M*0.6 + I*0.4| I[Final Curated Shortlist]
+```
+
 ### 1. Frontend (UI Layer)
 - **Framework:** Next.js (Client Components)
 - **Styling:** Tailwind CSS, `framer-motion` for fluid pipeline transitions. High-end "Luminal Scout" design system generated via StitchMCP (dark mode, glassmorphism, glowing telemetry).
@@ -37,7 +57,72 @@ The application is a monolith built with **Next.js (React)** and **Tailwind CSS*
 4. **Scoring Weightage:** The 60/40 Match/Interest ratio is hardcoded. It would ideally be a user-adjustable slider depending on how desperately the recruiter needs passive talent vs. exact technical fits.
 
 ## APIs & Tools Declared
-- **Google Gemini API** (Gemini 2.5 Flash): Used exclusively for Match reasoning, generating explainability, and candidate persona simulation. (Free/Trial tiers used, no credits provided).
+- **Google Gemini API** (Gemini 2.5 Flash), **OpenAI**, **Anthropic**: Used exclusively for Match reasoning, generating explainability, and candidate persona simulation. (Free/Trial tiers used, no credits provided).
 - **Next.js & React**: Core web framework.
 - **Framer Motion**: Animations.
 - **Tailwind CSS**: Styling and UI aesthetics.
+- **PapaParse**: CSV processing engine.
+
+---
+
+## Sample Inputs and Outputs
+
+### Sample Input (CSV / JSON Data ingested by the system)
+```json
+[
+  {
+    "id": "c1",
+    "name": "Alex Chen",
+    "role": "Senior ML Engineer",
+    "skills": "Python, PyTorch, LLMs, RAG, AWS",
+    "experience": "5 years building recommendation systems at Spotify",
+    "location": "Remote",
+    "salary_expectation": "180k",
+    "personality_context": "Direct, values technical challenges, unhappy with current corporate bureaucracy"
+  }
+]
+```
+
+### Sample Input (Job Description)
+```text
+Looking for a Senior AI Engineer to join our fast-paced startup. 
+Must have experience deploying LLMs, building RAG pipelines, and strong Python/PyTorch skills. 
+We operate fully remote. Budget: $150k - $170k.
+```
+
+### Sample Output (Match Score Phase)
+```json
+{
+  "candidateId": "c1",
+  "matchScore": 92,
+  "explanation": "Alex has exact overlap with PyTorch, LLMs, and RAG pipelines. However, their salary expectation ($180k) is slightly above the max budget ($170k)."
+}
+```
+
+### Sample Output (Engagement Phase Transcript & Interest Score)
+```json
+{
+  "interestScore": 45,
+  "transcript": [
+    {
+      "speaker": "AI Recruiter",
+      "text": "Hi Alex! I'm scouting for a fast-paced startup looking for a Senior AI Engineer to build RAG pipelines. It's fully remote with a budget of $170k. Would this interest you?"
+    },
+    {
+      "speaker": "Candidate",
+      "text": "The technical stack sounds perfect, especially getting away from corporate bureaucracy. However, my hard floor for moving right now is $180k. Is there any flexibility on the budget?"
+    },
+    {
+      "speaker": "AI Recruiter",
+      "text": "I completely understand. While $170k is the stated budget, fast-paced startups often have equity upside or signing bonuses we could discuss. Would you be open to an introductory call?"
+    },
+    {
+      "speaker": "Candidate",
+      "text": "I'd take the call to hear about the equity, but I'm hesitant to move without the base salary match."
+    }
+  ]
+}
+```
+
+### Final Global Score Output
+`Global Score: 73.2` *(92 Match * 0.6 + 45 Interest * 0.4)*. The recruiter immediately sees Alex is a great technical fit, but high flight risk due to the salary gap, saving a wasted initial phone screen.
