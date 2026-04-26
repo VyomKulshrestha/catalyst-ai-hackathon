@@ -34,83 +34,93 @@ export async function processJobDescription(apiKey: string | undefined, jd: stri
   const keyToUse = apiKey || process.env.MODEL_API_KEY || process.env.GEMINI_API_KEY;
   if (!keyToUse) throw new Error("API Key is required or must be set in Vercel environment variables.");
   
-  const results: MatchResult[] = [];
+  // Protect against Vercel timeouts and Token limits by evaluating max 20 candidates at once
+  const subset = candidatesList.slice(0, 20);
+  
+  const payload = JSON.stringify(subset.map(c => ({
+    id: c.id || c.candidateId,
+    name: c.name,
+    role: c.role,
+    skills: c.skills,
+    experience: c.experience || c.experience_years
+  })));
 
-  for (const candidate of candidatesList) {
-    const prompt = `You are an expert technical recruiter analyzing a candidate's fit for a job description.
+  const prompt = `You are an expert technical recruiter evaluating a batch of candidates against a job description.
 Job Description:
 ${jd}
 
-Candidate Profile:
-Name: ${candidate.name}
-Role: ${candidate.role}
-Skills: ${candidate.skills.join(", ")}
-Experience: ${candidate.experience_years} years
+Candidates (JSON):
+${payload}
 
-Evaluate the candidate's match for this job description.
-Provide your response strictly in the following JSON format:
+Evaluate each candidate's match for this job description.
+Provide your response STRICTLY in the following JSON format, with no markdown formatting:
 {
-  "matchScore": <number between 0 and 100 depending on how well they match the JD. Focus heavily on tech stack and years of experience. Be realistic, not overly generous.>,
-  "explanation": "<2-3 concise sentences explaining exactly why this score was given, highlighting strengths and missing requirements>"
+  "results": [
+    {
+      "candidateId": "<the candidate's id>",
+      "matchScore": <number between 0 and 100 heavily weighting tech stack and experience>,
+      "explanation": "<1-2 concise sentences explaining why this score was given>"
+    }
+  ]
 }
 `;
 
-    try {
-      let text = "{}";
-      
-      if (provider === "openai") {
-        const openai = new OpenAI({ apiKey: keyToUse });
-        const response = await openai.chat.completions.create({
-          model: "gpt-4o-mini",
-          response_format: { type: "json_object" },
-          messages: [{ role: "user", content: prompt }]
-        });
-        text = response.choices[0].message.content || "{}";
-      } 
-      else if (provider === "anthropic") {
-        const anthropic = new Anthropic({ apiKey: keyToUse });
-        const response = await anthropic.messages.create({
-          model: "claude-3-haiku-20240307",
-          max_tokens: 1000,
-          messages: [{ role: "user", content: prompt + "\n\nCRITICAL: OUTPUT ONLY RAW JSON WITH NO MARKDOWN BLOCK OR OTHER TEXT." }]
-        });
-        text = response.content[0].type === 'text' ? response.content[0].text : "{}";
-      }
-      else {
-        // default to gemini
-        const ai = new GoogleGenAI({ apiKey: keyToUse });
-        const response = await ai.models.generateContent({
-          model: 'gemini-2.5-flash',
-          contents: prompt,
-          config: { responseMimeType: "application/json" }
-        });
-        text = response.text || "{}";
-      }
-      
-      const parsed = JSON.parse(text);
-      
-      results.push({
-        candidateId: candidate.id,
-        name: candidate.name,
-        role: candidate.role,
-        skills: candidate.skills,
-        matchScore: parsed.matchScore || 0,
-        explanation: parsed.explanation || "No explanation provided."
+  try {
+    let text = "{}";
+    
+    if (provider === "openai") {
+      const openai = new OpenAI({ apiKey: keyToUse });
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        response_format: { type: "json_object" },
+        messages: [{ role: "user", content: prompt }]
       });
-    } catch (error) {
-      console.error(error);
-      results.push({
-        candidateId: candidate.id,
-        name: candidate.name,
-        role: candidate.role,
-        skills: candidate.skills,
-        matchScore: 0,
-        explanation: "Error processing candidate."
+      text = response.choices[0].message.content || "{}";
+    } 
+    else if (provider === "anthropic") {
+      const anthropic = new Anthropic({ apiKey: keyToUse });
+      const response = await anthropic.messages.create({
+        model: "claude-3-haiku-20240307",
+        max_tokens: 3000,
+        messages: [{ role: "user", content: prompt + "\n\nCRITICAL: OUTPUT ONLY RAW JSON WITH NO MARKDOWN BLOCK OR OTHER TEXT." }]
       });
+      text = response.content[0].type === 'text' ? response.content[0].text : "{}";
     }
-  }
+    else {
+      const ai = new GoogleGenAI({ apiKey: keyToUse });
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: prompt,
+        config: { responseMimeType: "application/json" }
+      });
+      text = response.text || "{}";
+    }
 
-  return results.sort((a, b) => b.matchScore - a.matchScore);
+    if (text.startsWith('```json')) {
+       text = text.replace(/```json/g, '').replace(/```/g, '').trim();
+    }
+
+    const parsed = JSON.parse(text);
+    const scoredList = parsed.results || [];
+    
+    // Map scores back to the original subset
+    const finalResults: MatchResult[] = subset.map((c: any) => {
+      const scoreObj = scoredList.find((s: any) => s.candidateId === (c.id || c.candidateId));
+      return {
+        candidateId: c.id || c.candidateId || Math.random().toString(),
+        name: c.name,
+        role: c.role,
+        skills: Array.isArray(c.skills) ? c.skills : (c.skills ? c.skills.split(',') : []),
+        matchScore: scoreObj ? scoreObj.matchScore : 0,
+        explanation: scoreObj ? scoreObj.explanation : "Failed to evaluate candidate."
+      };
+    });
+
+    return finalResults.sort((a, b) => b.matchScore - a.matchScore);
+  } catch (error) {
+    console.error("Batch evaluation error:", error);
+    throw new Error("Failed to evaluate candidates. Ensure API key is valid and you haven't exceeded rate limits.");
+  }
 }
 
 export interface AutonomousEngagementResult {
